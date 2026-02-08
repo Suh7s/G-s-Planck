@@ -61,6 +61,83 @@ class LocalHiddenVariableModel:
                 
         return max_s
 
+    def maximize_linear_combination(self, coefficients):
+        """
+        Finds the maximum value of a linear combination of correlations:
+        F = c0*E(a,b) + c1*E(a,b') + c2*E(a',b) + c3*E(a',b')
+        that can be produced by any Local Deterministic Strategy.
+        
+        Args:
+            coefficients: List/Tuple of 4 floats [c0, c1, c2, c3]
+            
+        Returns:
+            max_val: The maximum achievable value.
+        """
+        max_val = -999.0
+        
+        # Iterate over all 16 deterministic strategies (vertices of the local polytope)
+        # Each vertex defines values for A(a), A(a'), B(b), B(b') in {-1, 1}
+        for i in range(16):
+            va  = 1 if (i & 1) else -1
+            vap = 1 if (i & 2) else -1
+            vb  = 1 if (i & 4) else -1
+            vbp = 1 if (i & 8) else -1
+            
+            # The correlation E(x,y) for a deterministic strategy is just the product of outcomes
+            e_ab   = va * vb
+            e_abp  = va * vbp
+            e_apb  = vap * vb
+            e_apbp = vap * vbp
+            
+            # Compute the linear combination value for this strategy
+            val = (coefficients[0] * e_ab) + \
+                  (coefficients[1] * e_abp) + \
+                  (coefficients[2] * e_apb) + \
+                  (coefficients[3] * e_apbp)
+                  
+            if val > max_val:
+                max_val = val
+                
+        return max_val
+
+    def maximize_absolute_linear_combination(self, coefficients):
+        """
+        Finds the maximum absolute value of a linear combination of correlations:
+        F = c0*E(a,b) + c1*E(a,b') + c2*E(a',b) + c3*E(a',b')
+        that can be produced by any Local Deterministic Strategy.
+        
+        Symmetric evaluation: returns max(|F|).
+        
+        Args:
+            coefficients: List/Tuple of 4 floats [c0, c1, c2, c3]
+            
+        Returns:
+            max_abs_val: The maximum achievable magnitude.
+        """
+        max_abs_val = -999.0
+        
+        for i in range(16):
+            va  = 1 if (i & 1) else -1
+            vap = 1 if (i & 2) else -1
+            vb  = 1 if (i & 4) else -1
+            vbp = 1 if (i & 8) else -1
+            
+            e_ab   = va * vb
+            e_abp  = va * vbp
+            e_apb  = vap * vb
+            e_apbp = vap * vbp
+            
+            val = (coefficients[0] * e_ab) + \
+                  (coefficients[1] * e_abp) + \
+                  (coefficients[2] * e_apb) + \
+                  (coefficients[3] * e_apbp)
+                  
+            abs_val = abs(val)
+            if abs_val > max_abs_val:
+                max_abs_val = abs_val
+                
+        return max_abs_val
+        
     def fit(self, X, y):
         """
         Attempts to fit the LHV model to observed correlations.
@@ -77,6 +154,26 @@ class LocalHiddenVariableModel:
         3. If S_obs > Max_Model_S, then Model is Falsified.
         """
         return self.maximize_chsh()
+        
+    def fit_best(self, settings, observation):
+        """
+        Returns the best possible prediction of the model class for a given observation.
+        The model searches its own parameter space to find the maximum possible statistic.
+        
+        Args:
+            settings: The experimental settings (unused for CHSH as bound is universal, but kept for API).
+            observation: The specific observed S-statistic.
+            
+        Returns:
+            model_prediction: The maximum S-statistic the model can produce (found by search).
+            fitting_error: Gap between obs and limit (strain).
+        """
+        # Ask the model: "What is the max S you can produce?"
+        # The model performs a brute-force search over its hidden logical states.
+        limit = self.maximize_chsh()
+        
+        # Strain is the excess of observation over this limit
+        return limit, max(0, abs(observation) - limit)
 
 def verify_model_constraints():
     print("PL: Exploring constraints of Local Factorizable Models...")

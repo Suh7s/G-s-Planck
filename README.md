@@ -22,21 +22,28 @@ Planck does not know "Physics". It knows Logic and Statistics. It discovers that
 **Discovery**: Planck enumerates all possible history vectors $v(t) \in \{\pm 1\}$ and finds the maximum consistency metric ($K$) is 1.0. It observes $K \approx 1.5$, proving that **measuring the system changes its history**.
 
 ## Usage
-
-**Run Experiment Zero:**
+    
+**1. Active Discovery (Experiment Zero - Bell)**:
+The system autonomously searches for experimental settings that violate classical local realism.
 ```bash
-python3 src/simulator.py --trials 3000
-python3 src/inference.py
+# Run Active Loop (Search for Violation)
+python3 src/active_discovery_zero.py
+
+# Run Constraint Discovery (Find Mathematical Reason)
+python3 src/constraint_discovery.py
+python3 src/symbolic_discovery.py
+
+# Run Safety Guardrails (Verify Result)
+python3 src/guardrails.py
 ```
 
-**Run Experiment One:**
+**2. Manual Experiments**:
 ```bash
+# Experiment One (GHZ Logic)
 python3 src/ghz_simulator.py --trials 5000
 python3 src/ghz_inference.py
-```
 
-**Run Experiment Two:**
-```bash
+# Experiment Two (Temporal History)
 python3 src/temporal_simulator.py --trials 3000
 python3 src/temporal_inference.py
 ```
