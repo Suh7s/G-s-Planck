@@ -79,10 +79,16 @@ class LocalHiddenVariableModel:
         return self.maximize_chsh()
 
 def verify_model_constraints():
-    print("PL: Analyzing constraints of Local Factorizable Models...")
+    print("PL: Exploring constraints of Local Factorizable Models...")
+    
+    # Planck does not know the bound is 2.
+    # It must find it by exploring the model space.
     model = LocalHiddenVariableModel()
+    
+    print("PL: Running optimization over local hidden variable space...")
     max_s = model.maximize_chsh()
-    print(f"PL: Mathematical Search complete. Max obtainable S-statistic for Local Models: {max_s}")
+    
+    print(f"PL: Optimization complete. Empirical maximum S-statistic for this model class: {max_s}")
     return max_s
 
 if __name__ == "__main__":
